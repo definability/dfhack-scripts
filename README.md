@@ -105,11 +105,13 @@ You can create your own assignments in `dfhack-config/init/dfhack.init`.
 If your new key binding conflicts with any other hotkey managed by the script,
 it will be unassigned first.
 
-For example, the following code assigns `Shift-A` for painting a meeting area
-and `O` (`O` without `Shift`) for painting tomb:
+For example, the following code assigns `Shift-A` for painting a meeting area,
+`O` (`O` without `Shift`) for painting tomb,
+and removes binding for the pit/pond zone:
 ```
-overlay trigger gui/visible-hotkeys.zone-overlay Meeting Area A
-overlay trigger gui/visible-hotkeys.zone-overlay Tomb o
+overlay trigger gui/visible-hotkeys.zone-overlay add Meeting Area A
+overlay trigger gui/visible-hotkeys.zone-overlay add Tomb o
+overlay trigger gui/visible-hotkeys.zone-overlay clear Pit/Pond
 ```
 
 By default, `o` is used for office,

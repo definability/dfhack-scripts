@@ -29,7 +29,13 @@ For multiple assignments, you must repeat the command with different zone titles
 
 ::
 
-    overlay trigger gui/visible-hotkeys.zone-overlay <zone title> <key>
+    overlay trigger gui/visible-hotkeys.zone-overlay add <zone title> <key>
+
+To remove a hotkey for a zone of your choice, use the following command:
+
+::
+
+    overlay trigger gui/visible-hotkeys.zone-overlay clear <zone title>
 
 Default hotkeys
 ----------------
@@ -65,7 +71,7 @@ Examples
 ``overlay enable gui/visible-hotkeys.zone-overlay``
     Display hotkeys in zone selection menu and enable the default hotkeys.
 
-``overlay trigger gui/visible-hotkeys.zone-overlay Archery Range A``
+``overlay trigger gui/visible-hotkeys.zone-overlay add Archery Range A``
     Use ``Shift-A`` for "Archery Range" zone painting.
     After the script is enabled, you can modify the bindings.
     Keep in mind that such a binding disables using ``Shift-A``
@@ -74,9 +80,16 @@ Examples
     With the default configuration, this means ``A`` will override ``Y`` for "Archery Range",
     and pressing ``Shift-Y`` will not trigger "Archery Range" zone paint until reassigned.
 
-``overlay trigger gui/visible-hotkeys.zone-overlay Gather Fruit g``
+``overlay trigger gui/visible-hotkeys.zone-overlay add Gather Fruit g``
     Use ``G`` key for "Archery Range" zone painting.
     If the key is already in use, it will be unbound automatically from the previous action.
     For example, by default, ``g`` is used for the "Garbage Dump" zone.
     Thus, "Garbage Dump" loses its hotkey after being assigned ``g`` to "Gather Fruit."
     You can leave it as is or assign a new hotkey to "Garbage Dump" in this example.
+
+``overlay trigger gui/visible-hotkeys.zone-overlay clear Pit/Pond``
+    Remove a hotkey for pit/pond zone creation.
+    It may be useful if you want to use only specific zones,
+    and keep the other bindings active for other actions when the zone window is active.
+    However, remember, the hotkeys do not have effect when you are not in zone type choice mode.
+    The bindings are only active when you can see them in the corresponding tiles.

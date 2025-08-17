@@ -151,7 +151,6 @@ function ZoneBindingsOverlay:init()
     end
     self:addviews{
         Panel {
-            view_id = 'label_panel',
             visible = is_focus_zone,
             subviews = key_labels,
         },
@@ -189,18 +188,40 @@ function ZoneBindingsOverlay:add(zone_title, hotkey)
     self:change(current_zone, hotkey)
 end
 
+function ZoneBindingsOverlay:clear(zone_title, hotkey)
+    if type(zone_title) ~= "string" then
+        qerror(('Zone title must be a string, but %s was provided'):format(type(zone_title)))
+    end
+
+    local current_zone = find_zone_by_title(zone_title)
+    if not current_zone then
+        qerror(('Cannot find zone "%s"'):format(zone_title))
+    end
+
+    self:change(current_zone, nil)
+end
+
 function ZoneBindingsOverlay:overlay_trigger(...)
     local args = {...}
     if #args < 2 then
         qerror('At least three words are expected')
     end
 
-    local area_words = {}
-    for i = 1, #args - 1 do
-        area_words[i] = args[i]
+    if args[1] == "add" then
+        local zone_title_words = {}
+        for i = 2, #args - 1 do
+            zone_title_words[i - 1] = args[i]
+        end
+        local zone_title = table.concat(zone_title_words, ' ')
+        self:add(zone_title, args[#args])
+    elseif args[1] == "clear" then
+        local zone_title_words = {}
+        for i = 2, #args do
+            zone_title_words[i - 1] = args[i]
+        end
+        local zone_title = table.concat(zone_title_words, ' ')
+        self:clear(zone_title)
     end
-    local area_name = table.concat(area_words, ' ')
-    self:add(area_name, args[#args])
 end
 
 function ZoneBindingsOverlay:onInput(keys)
