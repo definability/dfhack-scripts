@@ -110,7 +110,7 @@ Known issues
 
 The widget draws the default key bindings in the following cases:
 
-* The bindings are specified in ``dfhack-config/init/dfhack.init`` rather then ``dfhack-config/init/onLoad.init``
+* The bindings are specified in ``dfhack-config/init/dfhack.init`` rather than ``dfhack-config/init/onLoad.init``
   and the user reloads a saved game without exiting the Dwarf Fortress application.
 * The bindings are specified during the game (in the game console, ``Ctrl-Shift-P``).
 
