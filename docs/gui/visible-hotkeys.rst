@@ -1,5 +1,5 @@
-visible-hotkeys
-=============
+gui/visible-hotkeys
+===================
 
 .. dfhack-tool::
     :summary: Module for assigning and visualising zone key bindings.
