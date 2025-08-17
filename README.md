@@ -62,11 +62,8 @@ When you are going to create multiple temples or guilds, using mouse becomes ann
 This script allows you to remove this restriction with maximum customisation.
 
 To activate it, copy [gui/visible-hotkeys.lua] to your `hack/scripts/gui` directory
-and enable the script and overlay by adding the following lines to your `dfhack-config/init/dfhack.init`:
+and enable the overlay by adding the following lines to your `dfhack-config/init/dfhack.init`:
 ```
-# hack/scripts/gui
-
-enable gui/visible-hotkeys
 overlay enable gui/visible-hotkeys.zone-overlay
 ```
 
@@ -104,20 +101,15 @@ and uppercase letters mean holding the `Shift` button and pressing the key.
 
 #### Custom key bindings
 
-You can create your own assignments in `dfhack-config/init/onLoad.init`.
-You must use this file to avoid known issues with incorrect keys displayed in the widget.
+You can create your own assignments in `dfhack-config/init/dfhack.init`.
 If your new key binding conflicts with any other hotkey managed by the script,
 it will be unassigned first.
 
-For example, the following code assigns `Shift-A` for painting a meeting area,
-`O` (without `Shift`) for painting tomb,
-and removes bindings for bedroom zone:
+For example, the following code assigns `Shift-A` for painting a meeting area
+and `O` (`O` without `Shift`) for painting tomb:
 ```
-# dfhack-config/init/onLoad.init
-
-:lua reqscript('gui/visible-hotkeys').add('Meeting Area', 'A')
-:lua reqscript('gui/visible-hotkeys').add('Tomb', 'o')
-:lua reqscript('gui/visible-hotkeys').clear('Bedroom')
+overlay trigger gui/visible-hotkeys.zone-overlay Meeting Area A
+overlay trigger gui/visible-hotkeys.zone-overlay Tomb o
 ```
 
 By default, `o` is used for office,
