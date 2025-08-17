@@ -2,7 +2,6 @@ local main_interface = df.global.game.main_interface
 
 if main_interface.bottom_mode_selected ~= df.main_bottom_mode_type.ZONE then
     qerror(('The script must be called in ZONE mode (%d), but the current mode is %d'):format(df.main_bottom_mode_type.ZONE, main_interface.bottom_mode_selected))
-    return
 end
 
 local zones = {
@@ -29,13 +28,11 @@ local zones = {
 local args = {...}
 if #args ~= 1 then
     qerror(('Single argument expected but %d arguments provided'):format(#args))
-    return
 end
 
 local current_zone_type = zones[args[1]]
 if not current_zone_type then
     qerror(('Unknown zone type %s'):format(args[1]))
-    return
 end
 
 main_interface.civzone.adding_new_type = current_zone_type
