@@ -1,14 +1,15 @@
---@ enable = true
+--@ enable = false
 --@ module = true
 
-Label = require('gui.widgets.labels.label')
+Label = require('gui.widgets').Label
+Panel = require('gui.widgets').Panel
 OverlayWidget = require('plugins.overlay').OverlayWidget
 
 local actions = {
     refresh = 'refresh',
 }
 
-local zones = {
+zones = {
     { hotkey = 'm', title = "Meeting Area",    identifier = df.civzone_type.MeetingHall },
     { hotkey = 'b', title = "Bedroom",         identifier = df.civzone_type.Bedroom },
     { hotkey = 'h', title = "Dining Hall",     identifier = df.civzone_type.DiningHall },
@@ -42,51 +43,37 @@ local hotkey_pen = {
     bg = COLOR_BLACK,
     bold = true,
 }
+local hotkey_pen_hover = {
+    fg = COLOR_WHITE,
+    bg = COLOR_BLACK,
+    bold = true,
+}
 local empty_hotkey_pen = {
     fg = COLOR_GRAY,
     bg = COLOR_BLACK,
     bold = false,
 }
 
-local function hotkey_character_to_binding(hotkey)
-    if not hotkey then
-        qerror("An invalid hotkey was provided")
+local function characterToKeyName(character)
+    if not character or type(character) ~= "string" then
+        qerror(('Character expected, but %s was provided'):format(type(character)))
+    end
+    if not character:match('^%a$') then
+        qerror(('An invalid character "%s" was provided'):format(character))
     end
 
-    local hotkey_end = string.upper(hotkey)
-    local use_shift = hotkey == hotkey_end
-    if use_shift then
-        return ('Shift-%s@dwarfmode/Zone'):format(hotkey_end)
-    else
-        return ('%s@dwarfmode/Zone'):format(hotkey_end)
-    end
+    local key_end = string.upper(character)
+    local use_shift = character == key_end
+
+    return ('CUSTOM%s_%s'):format(use_shift and '_SHIFT' or '', key_end)
 end
 
-local function unbind_key(zone)
-    if not zone then
-        qerror("An invalid zone was provided")
+local function is_focus_zone()
+    local current_focus = dfhack.gui.getCurFocus()
+    if #current_focus ~= 1 then
+        return false
     end
-    if not zone.hotkey then
-        return
-    end
-
-    dfhack.run_command_silent(('keybinding clear %s'):format(hotkey_character_to_binding(zone.hotkey)))
-    zone.hotkey = nil
-end
-
-local function bind_key(zone)
-    if not zone then
-        qerror("An invalid zone was provided")
-    end
-
-    local hotkey = zone.hotkey
-    if not hotkey then
-        return
-    end
-
-    dfhack.run_command_silent(
-            ('keybinding add %s "gui/visible-hotkeys %d"'):format(hotkey_character_to_binding(hotkey), zone.identifier)
-    )
+    return current_focus[1] == 'dwarfmode/Zone'
 end
 
 local function find_zone_by_title(zone_title)
@@ -100,70 +87,39 @@ local function find_zone_by_title(zone_title)
     return current_zone
 end
 
-function add(zone_title, hotkey)
-    if type(zone_title) ~= "string" then
-        qerror(('Zone title must be a string, but %s was provided'):format(type(zone_title)))
-    end
-    if type(hotkey) ~= "string" then
-        qerror(('Hotkey must be a string, but %s was provided'):format(type(hotkey)))
-    end
-    if not hotkey:match("^%a$") then
-        qerror(('Hotkey must be a single small or capital letter, but "%s" was provided'):format(hotkey))
-    end
-
-    local current_zone = find_zone_by_title(zone_title)
-    if not current_zone then
-        qerror(('Cannot find zone "%s"'):format(zone_title))
-    end
-
-    -- Use a separate loop for unbinding for the case the title is not found
-    for _, zone in ipairs(zones) do
-        if zone.hotkey == hotkey then
-            unbind_key(zone)
-        end
-    end
-
-    unbind_key(current_zone)
-    current_zone.hotkey = hotkey
-    bind_key(current_zone)
-    dfhack.run_command_silent(('overlay trigger gui/visible-hotkeys.zone-overlay %s'):format(actions.refresh))
-end
-
-function clear(zone_title)
-    if type(zone_title) ~= "string" then
-        qerror(('Zone title must be a string, but %s was provided'):format(type(zone_title)))
-    end
-    local current_zone = find_zone_by_title(zone_title)
-    if not current_zone then
-        qerror(('Cannot find zone "%s"'):format(zone_title))
-    end
-
-    unbind_key(current_zone)
-    dfhack.run_command_silent(('overlay trigger gui/visible-hotkeys.zone-overlay %s'):format(actions.refresh))
-end
-
-function on_zone_key(zone_identifier)
+local function on_zone_key(zone_identifier)
     local main_interface = df.global.game.main_interface
 
-    if main_interface.bottom_mode_selected ~= df.main_bottom_mode_type.ZONE then
-        qerror(('The script must be called in ZONE mode (%d), but the current mode is %d')
-                :format(df.main_bottom_mode_type.ZONE, main_interface.bottom_mode_selected))
+    if not is_focus_zone() then
+        qerror('The script must be called in dwarfmode/Zone only')
     end
 
     main_interface.civzone.adding_new_type = zone_identifier
     main_interface.bottom_mode_selected = df.main_bottom_mode_type.ZONE_PAINT
 end
 
-function start()
-    for _, zone in ipairs(zones) do
-        bind_key(zone)
+BindingLabel = defclass(BindingLabel, Label)
+BindingLabel.ATTRS {
+    auto_width = true,
+    auto_height = true,
+    text_pen = hotkey_pen,
+    text_hpen = hotkey_pen_hover,
+    text_dpen = empty_hotkey_pen,
+}
+
+function BindingLabel:init(args)
+    BindingLabel.super.init(self, args)
+    if self.disabled == nil and self.enabled == nil then
+        self.enabled = function() return self.text ~= no_hotkey_text end
     end
 end
 
-function stop()
-    for _, zone in ipairs(zones) do
-        unbind_key(zone)
-    end
+function BindingLabel:shouldHover()
+    return true
+end
+
+function BindingLabel:is_enabled_callback()
+    return function() return self.text ~= no_hotkey_text end
 end
 
 ZoneBindingsOverlay = defclass(ZoneBindingsOverlay, OverlayWidget)
@@ -184,61 +140,80 @@ ZoneBindingsOverlay.ATTRS {
 function ZoneBindingsOverlay:init()
     local key_labels = {}
     for i, zone in ipairs(zones) do
-        key_labels[i] = Label {
+        key_labels[i] = BindingLabel {
             view_id = zone.title,
             frame = {
                 t = ((i - 1) % row_count) * item_height,
                 l = (i <= row_count) and 0 or item_width,
             },
             text = zone.hotkey or no_hotkey_text,
-            text_pen = zone.hotkey and hotkey_pen or empty_hotkey_pen,
         }
     end
-    if #key_labels > 0 then
-        self:addviews(key_labels)
-    end
+    self:addviews{
+        Panel {
+            view_id = 'label_panel',
+            visible = is_focus_zone,
+            subviews = key_labels,
+        },
+    }
 end
 
-function ZoneBindingsOverlay:repaint()
+function ZoneBindingsOverlay:change(zone, hotkey)
+    zone.hotkey = hotkey
+    self.subviews[zone.title]:setText(zone.hotkey or no_hotkey_text)
+end
+
+function ZoneBindingsOverlay:add(zone_title, hotkey)
+    if type(zone_title) ~= "string" then
+        qerror(('Zone title must be a string, but %s was provided'):format(type(zone_title)))
+    end
+    if type(hotkey) ~= "string" then
+        qerror(('Hotkey must be a string, but %s was provided'):format(type(hotkey)))
+    end
+    if not hotkey:match("^%a$") then
+        qerror(('Hotkey must be a single small or capital letter, but "%s" was provided'):format(hotkey))
+    end
+
+    local current_zone = find_zone_by_title(zone_title)
+    if not current_zone then
+        qerror(('Cannot find zone "%s"'):format(zone_title))
+    end
+
+    -- Use a separate loop for unbinding for the case the title is not found
     for _, zone in ipairs(zones) do
-        self.subviews[zone.title].text_pen = zone.hotkey and hotkey_pen or empty_hotkey_pen
-        self.subviews[zone.title]:setText(zone.hotkey or no_hotkey_text)
+        if zone.hotkey == hotkey then
+            self:change(zone, nil)
+        end
     end
+
+    self:change(current_zone, hotkey)
 end
 
-function ZoneBindingsOverlay:render(painter)
-    if df.global.game.main_interface.bottom_mode_selected ~= df.main_bottom_mode_type.ZONE then
+function ZoneBindingsOverlay:overlay_trigger(...)
+    local args = {...}
+    if #args < 2 then
+        qerror('At least three words are expected')
+    end
+
+    local area_words = {}
+    for i = 1, #args - 1 do
+        area_words[i] = args[i]
+    end
+    local area_name = table.concat(area_words, ' ')
+    self:add(area_name, args[#args])
+end
+
+function ZoneBindingsOverlay:onInput(keys)
+    if not keys then
         return
     end
-    ZoneBindingsOverlay.super.render(self, painter)
-end
 
-function ZoneBindingsOverlay:overlay_trigger(action)
-    if action == actions.refresh then
-        self:repaint()
+    for _, zone in ipairs(zones) do
+        if zone.hotkey and keys[characterToKeyName(zone.hotkey)] then
+            on_zone_key(zone.identifier)
+            return true
+        end
     end
 end
 
 OVERLAY_WIDGETS = { ['zone-overlay'] = ZoneBindingsOverlay }
-
-enabled = enabled or false
-function isEnabled()
-    return enabled
-end
-
-if dfhack_flags.enable then
-    if dfhack_flags.enable_state then
-        start()
-        enabled = true
-    else
-        stop()
-        enabled = false
-    end
-end
-
-if not dfhack_flags.module then
-    local args = { ... }
-    if #args == 1 then
-        on_zone_key(args[1])
-    end
-end
