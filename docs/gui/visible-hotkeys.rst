@@ -20,12 +20,14 @@ Add the following lines to your ``dfhack-config/init/dfhack.init`` configuration
 to enable hotkeys in zone selection window:
 
 ::
+
     enable gui/visible-hotkeys
 
 Add the following lines to your ``dfhack-config/init/dfhack.init`` configuration file
 to display the hotkeys assigned via this script in zone selection window:
 
 ::
+
     overlay enable gui/visible-hotkeys.zone-overlay
 
 Add the following lines to your ``dfhack-config/init/onLoad.init`` configuration file
@@ -107,11 +109,12 @@ Known issues
 ------------
 
 The widget draws the default key bindings in the following cases:
-- The bindings are specified in ``dfhack-config/init/dfhack.init`` rather then ``dfhack-config/init/onLoad.init``
+
+* The bindings are specified in ``dfhack-config/init/dfhack.init`` rather then ``dfhack-config/init/onLoad.init``
   and the user reloads a saved game without exiting the Dwarf Fortress application.
-- The bindings are specified during the game (in the game console, ``Ctrl-Shift-P``).
+* The bindings are specified during the game (in the game console, ``Ctrl-Shift-P``).
 
 Workaround:
 
 Set up the key bindings for this script only in ``dfhack-config/init/onLoad.init``.
-Do not expect the overlay to display the correct information after modifying the bindings from DFHack console.
+Do not expect the overlay to display the correct information after modifying the bindings from the DFHack console.
