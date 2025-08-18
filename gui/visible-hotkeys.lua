@@ -5,8 +5,9 @@ Label = require('gui.widgets').Label
 Panel = require('gui.widgets').Panel
 OverlayWidget = require('plugins.overlay').OverlayWidget
 
-local actions = {
-    refresh = 'refresh',
+local commands = {
+    add = 'add',
+    clear = 'clear',
 }
 
 zones = {
@@ -204,17 +205,17 @@ end
 function ZoneBindingsOverlay:overlay_trigger(...)
     local args = {...}
     if #args < 2 then
-        qerror('At least three words are expected')
+        qerror('At least two arguments are expected')
     end
 
-    if args[1] == "add" then
+    if args[1] == commands.add then
         local zone_title_words = {}
         for i = 2, #args - 1 do
             zone_title_words[i - 1] = args[i]
         end
         local zone_title = table.concat(zone_title_words, ' ')
         self:add(zone_title, args[#args])
-    elseif args[1] == "clear" then
+    elseif args[1] == commands.clear then
         local zone_title_words = {}
         for i = 2, #args do
             zone_title_words[i - 1] = args[i]
