@@ -62,18 +62,15 @@ When you are going to create multiple temples or guilds, using mouse becomes ann
 This script allows you to remove this restriction with maximum customisation.
 
 To activate it, copy [gui/visible-hotkeys.lua] to your `hack/scripts/gui` directory
-and enable the script and overlay by adding the following lines to your `dfhack-config/init/dfhack.init`:
+and enable the overlay by adding the following lines to your `dfhack-config/init/dfhack.init`:
 ```
-# hack/scripts/gui
-
-enable gui/visible-hotkeys
 overlay enable gui/visible-hotkeys.zone-overlay
 ```
 
 Once you call zone menu (`z` by default) in Fortress mode,
 you will see the hints displayed on tiles corresponding to the zone types.
 
-![gui/visible-hotkeys](images/visible-hotkeys-classic-ascii-glyphs.png)
+![gui/visible-hotkeys](docs/images/visible-hotkeys-classic-ascii-glyphs.png)
 
 #### Default key bindings
 
@@ -104,20 +101,17 @@ and uppercase letters mean holding the `Shift` button and pressing the key.
 
 #### Custom key bindings
 
-You can create your own assignments in `dfhack-config/init/onLoad.init`.
-You must use this file to avoid known issues with incorrect keys displayed in the widget.
+You can create your own assignments in `dfhack-config/init/dfhack.init`.
 If your new key binding conflicts with any other hotkey managed by the script,
 it will be unassigned first.
 
 For example, the following code assigns `Shift-A` for painting a meeting area,
-`O` (without `Shift`) for painting tomb,
-and removes bindings for bedroom zone:
+`O` (`O` without `Shift`) for painting tomb,
+and removes binding for the pit/pond zone:
 ```
-# dfhack-config/init/onLoad.init
-
-:lua reqscript('gui/visible-hotkeys').add('Meeting Area', 'A')
-:lua reqscript('gui/visible-hotkeys').add('Tomb', 'o')
-:lua reqscript('gui/visible-hotkeys').clear('Bedroom')
+overlay trigger gui/visible-hotkeys.zone-overlay add Meeting Area A
+overlay trigger gui/visible-hotkeys.zone-overlay add Tomb o
+overlay trigger gui/visible-hotkeys.zone-overlay clear Pit/Pond
 ```
 
 By default, `o` is used for office,

@@ -11,27 +11,16 @@ This script allows creating custom key bindings and shows them in the zone choic
 Usage
 -----
 
-Be careful and use the proper configuration files.
-You should enable the script and widget in ``dfhack.init``
-while key bindings reassignment should take place in ``onLoad.init``.
-This issue is due to be investigated.
+Add the following lines to your ``dfhack-config/init/dfhack.init`` configuration file.
 
-Add the following lines to your ``dfhack-config/init/dfhack.init`` configuration file
-to enable hotkeys in zone selection window:
-
-::
-
-    enable gui/visible-hotkeys
-
-Add the following lines to your ``dfhack-config/init/dfhack.init`` configuration file
-to display the hotkeys assigned via this script in zone selection window:
+Enable hotkeys in zone selection window
+and display the hotkeys assigned via this script in zone selection window:
 
 ::
 
     overlay enable gui/visible-hotkeys.zone-overlay
 
-Add the following lines to your ``dfhack-config/init/onLoad.init`` configuration file
-to modify key bindings.
+Use the following command to modify key bindings.
 The key must be a single lowercase or uppercase letter.
 An uppercase letter means using the ``Shift`` key,
 while a lowercase letter means pressing the key corresponding to the letter.
@@ -40,15 +29,13 @@ For multiple assignments, you must repeat the command with different zone titles
 
 ::
 
-    :lua reqscript('gui/visible-hotkeys').add('<zone title>', '<key>')
+    overlay trigger gui/visible-hotkeys.zone-overlay add <zone title> <key>
 
-Add the following lines to your ``dfhack-config/init/onLoad.init`` configuration file
-to remove key binding for the zone.
-It is safe to clear when no bindings are assigned.
+To remove a hotkey for a zone of your choice, use the following command:
 
 ::
 
-    :lua reqscript('gui/visible-hotkeys').clear('<zone title>')
+    overlay trigger gui/visible-hotkeys.zone-overlay clear <zone title>
 
 Default hotkeys
 ----------------
@@ -81,15 +68,10 @@ You can reassign them manually and use these keys if you wish.
 Examples
 --------
 
-``enable gui/visible-hotkeys``
-    Just enable the default hotkeys.
-
 ``overlay enable gui/visible-hotkeys.zone-overlay``
-    Display hotkeys in zone selection menu.
-    Keep in mind that this command does not enable the hotkeys,
-    so you should also use ``enable gui/visible-hotkeys``.
+    Display hotkeys in zone selection menu and enable the default hotkeys.
 
-``:lua reqscript('gui/visible-hotkeys').add('Archery Range', 'A')``
+``overlay trigger gui/visible-hotkeys.zone-overlay add Archery Range A``
     Use ``Shift-A`` for "Archery Range" zone painting.
     After the script is enabled, you can modify the bindings.
     Keep in mind that such a binding disables using ``Shift-A``
@@ -98,23 +80,21 @@ Examples
     With the default configuration, this means ``A`` will override ``Y`` for "Archery Range",
     and pressing ``Shift-Y`` will not trigger "Archery Range" zone paint until reassigned.
 
-``:lua reqscript('gui/visible-hotkeys').add('Gather Fruit', 'g')``
+``overlay trigger gui/visible-hotkeys.zone-overlay add Gather Fruit g``
     Use ``G`` key for "Archery Range" zone painting.
     If the key is already in use, it will be unbound automatically from the previous action.
     For example, by default, ``g`` is used for the "Garbage Dump" zone.
     Thus, "Garbage Dump" loses its hotkey after being assigned ``g`` to "Gather Fruit."
     You can leave it as is or assign a new hotkey to "Garbage Dump" in this example.
 
-Known issues
-------------
+``overlay trigger gui/visible-hotkeys.zone-overlay clear Pit/Pond``
+    Remove a hotkey for pit/pond zone creation.
+    It may be useful if you want to use only specific zones,
+    and keep the other bindings active for other actions when the zone window is active.
+    However, remember, the hotkeys do not have effect when you are not in zone type choice mode.
+    The bindings are only active when you can see them in the corresponding tiles.
 
-The widget draws the default key bindings in the following cases:
+Screenshot
+----------
 
-* The bindings are specified in ``dfhack-config/init/dfhack.init`` rather than ``dfhack-config/init/onLoad.init``
-  and the user reloads a saved game without exiting the Dwarf Fortress application.
-* The bindings are specified during the game (in the game console, ``Ctrl-Shift-P``).
-
-Workaround:
-
-Set up the key bindings for this script only in ``dfhack-config/init/onLoad.init``.
-Do not expect the overlay to display the correct information after modifying the bindings from the DFHack console.
+.. image:: /docs/images/visible-hotkeys-classic-ascii-glyphs.png
