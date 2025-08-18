@@ -93,3 +93,8 @@ Examples
     and keep the other bindings active for other actions when the zone window is active.
     However, remember, the hotkeys do not have effect when you are not in zone type choice mode.
     The bindings are only active when you can see them in the corresponding tiles.
+
+Screenshot
+----------
+
+.. image:: /docs/images/visible-hotkeys-classic-ascii-glyphs.png
