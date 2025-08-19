@@ -5,6 +5,8 @@ Label = require('gui.widgets').Label
 Panel = require('gui.widgets').Panel
 OverlayWidget = require('plugins.overlay').OverlayWidget
 
+local floor = math.floor
+
 local commands = {
     add = 'add',
     clear = 'clear',
@@ -77,6 +79,14 @@ local function is_focus_zone()
     return current_focus[1] == 'dwarfmode/Zone'
 end
 
+local function is_focus_building()
+    local current_focus = dfhack.gui.getCurFocus()
+    if #current_focus ~= 1 then
+        return false
+    end
+    return current_focus[1] == 'dwarfmode/Building'
+end
+
 local function find_zone_by_title(zone_title)
     local current_zone
     for _, zone in ipairs(zones) do
@@ -97,6 +107,51 @@ local function on_zone_key(zone_identifier)
 
     main_interface.civzone.adding_new_type = zone_identifier
     main_interface.bottom_mode_selected = df.main_bottom_mode_type.ZONE_PAINT
+end
+
+local function get_last_construction_page()
+    local page = df.global.game.main_interface.construction.page
+    if not page or #page == 0 then
+        return nil
+    end
+    -- `page` is a C++ array, so the indexing is zero-based,
+    -- and the last element has index `#pages - 1`
+    return page[#page - 1]
+end
+
+local function get_construction_view_size()
+    local current_page = get_last_construction_page()
+    if not current_page or not current_page.bb_button or #current_page.bb_button == 0 then
+        return nil
+    end
+
+    -- `bb_button` is a C++ array, so the indexing is zero-based
+    local grid_height = current_page.bb_button[0].grid_height
+
+    local ey = current_page and current_page.last_main_ey or 0
+    local ex = current_page and current_page.last_main_ex or 0
+
+    local construction = df.global.game.main_interface.construction
+    local rows = construction.max_height
+    local full_l = ex - construction.total_width
+
+    local frame = {}
+    local page = {}
+
+    frame.width = construction.total_width
+    frame.height = (rows - 1) * grid_height + 1
+    frame.left = (full_l - full_l % 2) / 2
+    frame.top = ey - frame.height
+
+    page.cell_height = grid_height
+    page.cell_width = current_page.column_width
+    page.rows = current_page.column_height
+    page.columns = current_page.number_of_columns
+
+    return {
+        frame = frame,
+        page = page,
+    }
 end
 
 BindingLabel = defclass(BindingLabel, Label)
@@ -238,4 +293,108 @@ function ZoneBindingsOverlay:onInput(keys)
     end
 end
 
-OVERLAY_WIDGETS = { ['zone-overlay'] = ZoneBindingsOverlay }
+BuildingBindingsOverlay = defclass(BuildingBindingsOverlay, OverlayWidget)
+BuildingBindingsOverlay.ATTRS {
+    viewscreens = { 'dwarfmode/Building' },
+    overlay_onupdate_max_freq_seconds = 0.1,
+    default_enabled = true,
+    desc = 'Display hotkeys for Building choice menu',
+}
+
+function BuildingBindingsOverlay:init()
+    local construction_types = df.construction_category_type
+    local panels = {}
+    for i, type in ipairs(construction_types) do
+        panels[i + 1] = Panel {
+            view_id = type,
+            visible = false,
+            frame = {
+                w = 0,
+                h = 0,
+            }
+        }
+    end
+
+    self:addviews{
+        Panel {
+            view_id = 'building_bindings_panel',
+            visible = is_focus_building,
+            subviews = panels,
+        },
+    }
+end
+
+function BuildingBindingsOverlay:onInput(keys)
+    --self:redraw()
+end
+
+function BuildingBindingsOverlay:overlay_onupdate(viewscreen)
+     self:redraw()
+end
+
+function BuildingBindingsOverlay:render(painter)
+    BuildingBindingsOverlay.super.render(self, painter)
+end
+
+function BuildingBindingsOverlay:redraw()
+    local sizes = get_construction_view_size()
+    local last_page = get_last_construction_page()
+
+    if not sizes or not last_page then
+        return
+    end
+
+    self.frame.t = sizes.frame.top
+    self.frame.h = sizes.frame.height
+    self.frame.l = sizes.frame.left
+    self.frame.w = sizes.frame.width
+
+    local panel_left = self.frame.w - sizes.page.columns * sizes.page.cell_width
+    local panel_width = sizes.page.columns * sizes.page.cell_width
+    local panel_height = sizes.page.rows * sizes.page.cell_height
+
+    local category_name = df.construction_category_type[last_page.category]
+    local panel = self.subviews[category_name]
+    if not panel then
+        qerror(('Cannot find panel %s (%d)'):format(category_name, last_page.category))
+    end
+
+    for _, current_panel in ipairs(self.subviews.building_bindings_panel.subviews) do
+        current_panel.visible = false
+    end
+    panel.frame.l = panel_left
+    panel.visible = true
+    if #panel.subviews == #last_page.bb_button and panel.frame.w == panel_width and panel.frame.h == panel_height then
+        return
+    end
+
+    panel.frame.w = panel_width
+    panel.frame.h = panel_height
+
+    if #panel.subviews ~= #last_page.bb_button then
+        local items = {}
+        for i, button in ipairs(last_page.bb_button) do
+            items[i + 1] = BindingLabel {
+                view_id = ('%s.%s'):format(category_name, button.str),
+                frame = {
+                    t = (i % sizes.page.rows) * sizes.page.cell_height,
+                    l = math.floor(i / sizes.page.rows) * sizes.page.cell_width,
+                },
+                text = dfhack.screen.getKeyDisplay(button.hotkey),
+            }
+        end
+        panel:addviews(items)
+    else
+        for i, button in ipairs(last_page.bb_button) do
+            panel.subviews[('%s.%s'):format(category_name, button.str)].frame = {
+                t = (i % sizes.page.rows) * sizes.page.cell_height,
+                l = sizes.frame.width + (math.floor(i / sizes.page.rows) - sizes.page.columns) * sizes.page.cell_width,
+            }
+        end
+    end
+end
+
+OVERLAY_WIDGETS = {
+    ['zone-overlay'] = ZoneBindingsOverlay,
+    ['building-overlay'] = BuildingBindingsOverlay,
+}
