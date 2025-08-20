@@ -70,7 +70,13 @@ overlay enable gui/visible-hotkeys.zone-overlay
 Once you call zone menu (`z` by default) in Fortress mode,
 you will see the hints displayed on tiles corresponding to the zone types.
 
-![gui/visible-hotkeys](docs/images/visible-hotkeys-classic-ascii-glyphs.png)
+Zone key bindings overlay:
+
+![gui/visible-hotkeys.zone-overlay](docs/images/visible-hotkeys-zones-classic-ascii-glyphs.png)
+
+Building menu key bindings overlay:
+
+![gui/visible-hotkeys.building-bindings](docs/images/visible-hotkeys-buildings-classic-ascii-glyphs.png)
 
 #### Default key bindings
 
