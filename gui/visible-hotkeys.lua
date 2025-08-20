@@ -6,6 +6,7 @@ Panel = require('gui.widgets').Panel
 OverlayWidget = require('plugins.overlay').OverlayWidget
 
 local floor = math.floor
+local ceil = math.ceil
 
 local commands = {
     add = 'add',
@@ -119,7 +120,38 @@ local function get_last_construction_page()
     return page[#page - 1]
 end
 
-local function get_construction_view_size()
+local function get_last_page_offset_left()
+    local pages = df.global.game.main_interface.construction.page
+    if not pages or #pages == 0 then
+        return 0
+    end
+
+    -- Consider single-column vertical separators between each page
+    local left_offset = #pages - 1
+
+    if #pages == 1 then
+        -- `pages` is a C++ array, so the indexing is zero-based
+        return left_offset
+    end
+
+    -- Found experimentally. May be incorrect in Premium graphics mode.
+    local icon_width = 5
+    for i = 0, #pages - 2 do
+        local page = pages[i]
+        local status = df.construction_interface_page_status_type[page.page_status]
+        if status == 'FULL' then
+            left_offset = left_offset + page.number_of_columns * page.column_width
+        elseif status == 'ICONS_ONLY' then
+            left_offset = left_offset + page.number_of_columns * icon_width
+        elseif status == 'OFF' then
+        else
+            qerror(('Unexpected status %s (%d)'):format(status, page.page_status))
+        end
+    end
+    return left_offset
+end
+
+local function get_frame_size()
     local current_page = get_last_construction_page()
     if not current_page or not current_page.bb_button or #current_page.bb_button == 0 then
         return nil
@@ -134,23 +166,43 @@ local function get_construction_view_size()
     local construction = df.global.game.main_interface.construction
     local rows = construction.max_height
     local full_l = ex - construction.total_width
-
-    local frame = {}
-    local page = {}
-
-    frame.width = construction.total_width
-    frame.height = (rows - 1) * grid_height + 1
-    frame.left = (full_l - full_l % 2) / 2
-    frame.top = ey - frame.height
-
-    page.cell_height = grid_height
-    page.cell_width = current_page.column_width
-    page.rows = current_page.column_height
-    page.columns = current_page.number_of_columns
+    local height = (rows - 1) * grid_height + 1
 
     return {
-        frame = frame,
-        page = page,
+        width = construction.total_width,
+        height = height,
+        left = ceil(full_l / 2) - 1,
+        top = ey - height,
+    }
+end
+
+local function get_page_size()
+    local current_page = get_last_construction_page()
+    if not current_page or not current_page.bb_button or #current_page.bb_button == 0 then
+        return nil
+    end
+
+    -- `bb_button` is a C++ array, so the indexing is zero-based
+    local grid_height = current_page.bb_button[0].grid_height
+    return {
+        cell_height = grid_height,
+        cell_width = current_page.column_width,
+        rows = current_page.column_height,
+        columns = current_page.number_of_columns,
+    }
+end
+
+local function is_page_visible(category)
+    return function()
+        local last_page = get_last_construction_page()
+        return last_page and category == last_page.category
+    end
+end
+
+local function get_cell_frame(i, rows, cell_height, cell_width)
+    return {
+        t = (i % rows) * cell_height,
+        l = floor(i / rows) * cell_width,
     }
 end
 
@@ -307,11 +359,13 @@ function BuildingBindingsOverlay:init()
     for i, type in ipairs(construction_types) do
         panels[i + 1] = Panel {
             view_id = type,
-            visible = false,
             frame = {
                 w = 0,
                 h = 0,
-            }
+                t = 0,
+                l = 0,
+            },
+            visible = is_page_visible(i),
         }
     end
 
@@ -322,36 +376,84 @@ function BuildingBindingsOverlay:init()
             subviews = panels,
         },
     }
-end
 
-function BuildingBindingsOverlay:onInput(keys)
-    --self:redraw()
+    self:populate_current_page()
 end
 
 function BuildingBindingsOverlay:overlay_onupdate(viewscreen)
-     self:redraw()
+     self:populate_current_page()
 end
 
-function BuildingBindingsOverlay:render(painter)
-    BuildingBindingsOverlay.super.render(self, painter)
+function BuildingBindingsOverlay:preUpdateLayout(parent_rect)
+    self:resize()
 end
 
-function BuildingBindingsOverlay:redraw()
-    local sizes = get_construction_view_size()
-    local last_page = get_last_construction_page()
-
-    if not sizes or not last_page then
+function BuildingBindingsOverlay:resize()
+    local page = get_page_size()
+    if not page then
         return
     end
 
-    self.frame.t = sizes.frame.top
-    self.frame.h = sizes.frame.height
-    self.frame.l = sizes.frame.left
-    self.frame.w = sizes.frame.width
+    self:update_frame_size()
+    local panel = self:get_current_panel()
 
-    local panel_left = self.frame.w - sizes.page.columns * sizes.page.cell_width
-    local panel_width = sizes.page.columns * sizes.page.cell_width
-    local panel_height = sizes.page.rows * sizes.page.cell_height
+    -- The panel should not be displayed or was not loaded yet
+    if not panel or #panel.subviews == 0 then
+        return
+    end
+
+    local panel_width = (page.columns - 1) * page.cell_width + 1
+    local panel_height = page.rows * page.cell_height
+    panel.frame.l = get_last_page_offset_left() --or (self.frame.w - panel_width)
+    -- The size is the same, no changes needed
+    if panel.frame.w == panel_width and panel.frame.h == panel_height then
+        return
+    end
+
+    panel.frame.w = panel_width
+    panel.frame.h = panel_height
+
+    for i, subview in ipairs(panel.subviews) do
+        subview.frame = get_cell_frame(i - 1, page.rows, page.cell_height, page.cell_width)
+    end
+end
+
+function BuildingBindingsOverlay:populate_current_page()
+    local page = get_page_size()
+    local last_page = get_last_construction_page()
+    if not page or not last_page then
+        return
+    end
+
+    self:update_frame_size()
+    local panel = self:get_current_panel()
+
+    -- The panel should not be displayed or is already populated
+    if not panel or #panel.subviews == #last_page.bb_button then
+        return
+    end
+
+    panel.frame.w = (page.columns - 1) * page.cell_width + 1
+    panel.frame.h = page.rows * page.cell_height
+    panel.frame.l = get_last_page_offset_left() -- or (self.frame.w - panel.frame.w)
+
+    local items = {}
+    for i, button in ipairs(last_page.bb_button) do
+        -- bb_button is a C++ array, so the indexing is zero-based
+        items[i + 1] = BindingLabel {
+            view_id = ('%s.%s'):format(category_name, button.str),
+            frame = get_cell_frame(i, page.rows, page.cell_height, page.cell_width),
+            text = dfhack.screen.getKeyDisplay(button.hotkey),
+        }
+    end
+    panel:addviews(items)
+end
+
+function BuildingBindingsOverlay:get_current_panel()
+    local last_page = get_last_construction_page()
+    if not last_page then
+        return
+    end
 
     local category_name = df.construction_category_type[last_page.category]
     local panel = self.subviews[category_name]
@@ -359,39 +461,19 @@ function BuildingBindingsOverlay:redraw()
         qerror(('Cannot find panel %s (%d)'):format(category_name, last_page.category))
     end
 
-    for _, current_panel in ipairs(self.subviews.building_bindings_panel.subviews) do
-        current_panel.visible = false
-    end
-    panel.frame.l = panel_left
-    panel.visible = true
-    if #panel.subviews == #last_page.bb_button and panel.frame.w == panel_width and panel.frame.h == panel_height then
+    return panel
+end
+
+function BuildingBindingsOverlay:update_frame_size()
+    local frame = get_frame_size()
+    if not frame then
         return
     end
 
-    panel.frame.w = panel_width
-    panel.frame.h = panel_height
-
-    if #panel.subviews ~= #last_page.bb_button then
-        local items = {}
-        for i, button in ipairs(last_page.bb_button) do
-            items[i + 1] = BindingLabel {
-                view_id = ('%s.%s'):format(category_name, button.str),
-                frame = {
-                    t = (i % sizes.page.rows) * sizes.page.cell_height,
-                    l = math.floor(i / sizes.page.rows) * sizes.page.cell_width,
-                },
-                text = dfhack.screen.getKeyDisplay(button.hotkey),
-            }
-        end
-        panel:addviews(items)
-    else
-        for i, button in ipairs(last_page.bb_button) do
-            panel.subviews[('%s.%s'):format(category_name, button.str)].frame = {
-                t = (i % sizes.page.rows) * sizes.page.cell_height,
-                l = sizes.frame.width + (math.floor(i / sizes.page.rows) - sizes.page.columns) * sizes.page.cell_width,
-            }
-        end
-    end
+    self.frame.t = frame.top
+    self.frame.h = frame.height
+    self.frame.l = frame.left
+    self.frame.w = frame.width
 end
 
 OVERLAY_WIDGETS = {
