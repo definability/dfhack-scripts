@@ -10,12 +10,14 @@ and support developers.
 DFHack is available for free on the [official GitHub page][DFHack]
 and [Steam][dfhack-steam].
 
-## Scripts
-
-The repository contains the following scripts.
+Below is the description of the components contained in this repository.
 I plan to add more in the future.
 
-### zone-bindings
+## zone-bindings
+
+Read [docs/zone-bindings.rst]
+if you want to understand the script usage.
+However, the following instructions may suffice.
 
 Zones, unlike buildings, do not have key bindings in the vanilla version of the game.
 When you are going to create multiple temples or guilds, using mouse becomes annoying.
@@ -24,7 +26,7 @@ This script allows you to remove this restriction with maximum customisation.
 To activate it, copy [zone-bindings.lua] to your `hack/scripts` directory
 and add the desired key bindings to `dfhack-config/init/dfhack.init`.
 
-#### Recommended settings
+### Recommended settings
 
 In the following configuration example,
 zones are sorted and grouped just like they appear in the game
@@ -52,10 +54,23 @@ keybinding add Shift-F@dwarfmode/Zone "zone-bindings gather-fruit"
 keybinding add Shift-L@dwarfmode/Zone "zone-bindings clay"
 ```
 
-Read [docs/zone-bindings.rst]
-if you want to understand the script usage a bit more.
+## gui/visible-hotkeys
 
-### gui/visible-hotkeys
+Read [docs/gui/visible-hotkeys.rst]
+if you want to understand the module usage.
+However, the following instructions may suffice.
+
+### gui/visible-hotkeys.building-overlay
+
+By default, the game UI gives pop-up hints regarding the building hotkeys.
+It is inefficient for gaining the muscle memory for the bindings.
+This overlay displays the hotkeys in the corresponding icon tiles.
+
+Building menu key bindings overlay:
+
+![gui/visible-hotkeys.building-bindings](docs/images/visible-hotkeys-buildings-classic-ascii-glyphs.png)
+
+### gui/visible-hotkeys.zone-overlay
 
 Zones, unlike buildings, do not have key bindings in the vanilla version of the game.
 When you are going to create multiple temples or guilds, using mouse becomes annoying.
@@ -73,10 +88,6 @@ you will see the hints displayed on tiles corresponding to the zone types.
 Zone key bindings overlay:
 
 ![gui/visible-hotkeys.zone-overlay](docs/images/visible-hotkeys-zones-classic-ascii-glyphs.png)
-
-Building menu key bindings overlay:
-
-![gui/visible-hotkeys.building-bindings](docs/images/visible-hotkeys-buildings-classic-ascii-glyphs.png)
 
 #### Default key bindings
 
@@ -122,9 +133,6 @@ overlay trigger gui/visible-hotkeys.zone-overlay clear Pit/Pond
 
 By default, `o` is used for office,
 so these commands will also remove the key bindings for office.
-
-Read [docs/gui/visible-hotkeys.rst]
-if you want to understand the script usage a bit more.
 
 [DFHack]: https://github.com/DFHack/dfhack/
 [dfhack-steam]: https://store.steampowered.com/app/2346660/DFHack__Dwarf_Fortress_Modding_Engine/
