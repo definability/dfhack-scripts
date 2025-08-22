@@ -56,6 +56,10 @@ keybinding add Shift-L@dwarfmode/Zone "zone-bindings clay"
 
 ## gui/visible-hotkeys
 
+To start using this module,
+copy [gui/visible-hotkeys.lua] to your `hack/scripts/gui` directory
+and [internal/visible-hotkeys] to your `hack/scripts/internal` directory.
+
 Read [docs/gui/visible-hotkeys.rst]
 if you want to understand the module usage.
 However, the following instructions may suffice.
@@ -76,8 +80,8 @@ Zones, unlike buildings, do not have key bindings in the vanilla version of the 
 When you are going to create multiple temples or guilds, using mouse becomes annoying.
 This script allows you to remove this restriction with maximum customisation.
 
-To activate it, copy [gui/visible-hotkeys.lua] to your `hack/scripts/gui` directory
-and enable the overlay by adding the following lines to your `dfhack-config/init/dfhack.init`:
+To activate it, enable the overlay
+by adding the following lines to your `dfhack-config/init/dfhack.init`:
 ```
 overlay enable gui/visible-hotkeys.zone-overlay
 ```
@@ -142,4 +146,5 @@ so these commands will also remove the key bindings for office.
 [docs/gui/visible-hotkeys.rst]: docs/gui/visible-hotkeys.rst
 [docs/zone-bindings.rst]: docs/zone-bindings.rst
 [gui/visible-hotkeys.lua]: gui/visible-hotkeys.lua
+[internal/visible-hotkeys]: internal/visible-hotkeys
 [zone-bindings.lua]: zone-bindings.lua
