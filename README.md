@@ -72,7 +72,7 @@ This overlay displays the hotkeys in the corresponding icon tiles.
 
 Building menu key bindings overlay:
 
-![gui/visible-hotkeys.building-bindings](docs/images/visible-hotkeys-buildings-classic-ascii-glyphs.png)
+![gui/visible-hotkeys.building-bindings](docs/images/visible-hotkeys-building-classic-ascii-glyphs.png)
 
 ### gui/visible-hotkeys.zone-overlay
 
@@ -91,7 +91,7 @@ you will see the hints displayed on tiles corresponding to the zone types.
 
 Zone key bindings overlay:
 
-![gui/visible-hotkeys.zone-overlay](docs/images/visible-hotkeys-zones-classic-ascii-glyphs.png)
+![gui/visible-hotkeys.zone-overlay](docs/images/visible-hotkeys-zone-classic-ascii-glyphs.png)
 
 #### Default key bindings
 

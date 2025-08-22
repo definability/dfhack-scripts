@@ -29,7 +29,7 @@ and display the hotkeys assigned via this script in building selection window:
 Screenshot
 **********
 
-.. image:: /docs/images/visible-hotkeys-buildings-classic-ascii-glyphs.png
+.. image:: /docs/images/visible-hotkeys-building-classic-ascii-glyphs.png
 
 Zones
 -----
@@ -124,4 +124,4 @@ Examples
 Screenshot
 **********
 
-.. image:: /docs/images/visible-hotkeys-zones-classic-ascii-glyphs.png
+.. image:: /docs/images/visible-hotkeys-zone-classic-ascii-glyphs.png
