@@ -2,7 +2,10 @@
 
 local Panel = require('gui.widgets').Panel
 local OverlayWidget = require('plugins.overlay').OverlayWidget
+
 local helpers = reqscript('internal/visible-hotkeys/helpers')
+
+local min = math.min
 
 local BindingLabel = helpers.BindingLabel
 local get_cell_frame = helpers.get_cell_frame
@@ -40,6 +43,8 @@ local horizontal_offset = 7
 local item_height = 3
 local item_width = 19
 local row_count = #zones / 2
+
+local frame_height = (row_count - 1) * item_height + 1
 
 local function characterToKeyName(character)
     if not character or type(character) ~= "string" then
@@ -94,7 +99,7 @@ ZoneBindingsOverlay.ATTRS {
     },
     frame = {
         w = item_width + 1,
-        h = row_count * item_height,
+        h = frame_height,
     },
     default_enabled = true,
     desc = 'Display hotkeys for Zone choice menu',
@@ -128,6 +133,13 @@ function ZoneBindingsOverlay:onInput(keys)
             return true
         end
     end
+end
+
+function ZoneBindingsOverlay:preUpdateLayout(parent_rect)
+    local _, height = dfhack.screen.getWindowSize()
+    -- Keep additional rows for the bottom panel
+    local max_height = height - self.frame.t - 2
+    self.frame.h = min(frame_height, max_height)
 end
 
 function ZoneBindingsOverlay:overlay_trigger(...)
