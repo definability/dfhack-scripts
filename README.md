@@ -64,7 +64,7 @@ Read [docs/gui/visible-hotkeys.rst]
 if you want to understand the module usage.
 However, the following instructions may suffice.
 
-### gui/visible-hotkeys.building-overlay
+### gui/visible-hotkeys.building
 
 By default, the game UI gives pop-up hints regarding the building hotkeys.
 It is inefficient for gaining the muscle memory for the bindings.
@@ -74,7 +74,7 @@ Building menu key bindings overlay:
 
 ![gui/visible-hotkeys.building-bindings](docs/images/visible-hotkeys-building-classic-ascii-glyphs.png)
 
-### gui/visible-hotkeys.zone-overlay
+### gui/visible-hotkeys.zone
 
 Zones, unlike buildings, do not have key bindings in the vanilla version of the game.
 When you are going to create multiple temples or guilds, using mouse becomes annoying.
@@ -83,7 +83,7 @@ This script allows you to remove this restriction with maximum customisation.
 To activate it, enable the overlay
 by adding the following lines to your `dfhack-config/init/dfhack.init`:
 ```
-overlay enable gui/visible-hotkeys.zone-overlay
+overlay enable gui/visible-hotkeys.zone
 ```
 
 Once you call zone menu (`z` by default) in Fortress mode,
@@ -91,7 +91,7 @@ you will see the hints displayed on tiles corresponding to the zone types.
 
 Zone key bindings overlay:
 
-![gui/visible-hotkeys.zone-overlay](docs/images/visible-hotkeys-zone-classic-ascii-glyphs.png)
+![gui/visible-hotkeys.zone](docs/images/visible-hotkeys-zone-classic-ascii-glyphs.png)
 
 #### Default key bindings
 
@@ -130,9 +130,9 @@ For example, the following code assigns `Shift-A` for painting a meeting area,
 `O` (`O` without `Shift`) for painting tomb,
 and removes binding for the pit/pond zone:
 ```
-overlay trigger gui/visible-hotkeys.zone-overlay add Meeting Area A
-overlay trigger gui/visible-hotkeys.zone-overlay add Tomb o
-overlay trigger gui/visible-hotkeys.zone-overlay clear Pit/Pond
+overlay trigger gui/visible-hotkeys.zone add Meeting Area A
+overlay trigger gui/visible-hotkeys.zone add Tomb o
+overlay trigger gui/visible-hotkeys.zone clear Pit/Pond
 ```
 
 By default, `o` is used for office,

@@ -1,6 +1,6 @@
 --@ module = true
 
 OVERLAY_WIDGETS = {
-    ['zone-overlay'] = reqscript('internal/visible-hotkeys/zone-overlay').ZoneBindingsOverlay,
-    ['building-overlay'] = reqscript('internal/visible-hotkeys/building-overlay').BuildingBindingsOverlay,
+    zone = reqscript('internal/visible-hotkeys/zone').ZoneBindingsOverlay,
+    building = reqscript('internal/visible-hotkeys/building').BuildingBindingsOverlay,
 }

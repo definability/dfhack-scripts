@@ -24,7 +24,7 @@ and display the hotkeys assigned via this script in building selection window:
 
 ::
 
-    overlay enable gui/visible-hotkeys.building-overlay
+    overlay enable gui/visible-hotkeys.building
 
 Screenshot
 **********
@@ -44,7 +44,7 @@ and display the hotkeys assigned via this script in zone selection window:
 
 ::
 
-    overlay enable gui/visible-hotkeys.zone-overlay
+    overlay enable gui/visible-hotkeys.zone
 
 Use the following command to modify key bindings.
 The key must be a single lowercase or uppercase letter.
@@ -55,13 +55,13 @@ For multiple assignments, you must repeat the command with different zone titles
 
 ::
 
-    overlay trigger gui/visible-hotkeys.zone-overlay add <zone title> <key>
+    overlay trigger gui/visible-hotkeys.zone add <zone title> <key>
 
 To remove a hotkey for a zone of your choice, use the following command:
 
 ::
 
-    overlay trigger gui/visible-hotkeys.zone-overlay clear <zone title>
+    overlay trigger gui/visible-hotkeys.zone clear <zone title>
 
 Default hotkeys
 ***************
@@ -95,10 +95,10 @@ You can reassign them manually and use these keys if you wish.
 Examples
 ********
 
-``overlay enable gui/visible-hotkeys.zone-overlay``
+``overlay enable gui/visible-hotkeys.zone``
     Display hotkeys in zone selection menu and enable the default hotkeys.
 
-``overlay trigger gui/visible-hotkeys.zone-overlay add Archery Range A``
+``overlay trigger gui/visible-hotkeys.zone add Archery Range A``
     Use :kbd:`Shift`:kbd:`A` for "Archery Range" zone painting.
     After the script is enabled, you can modify the bindings.
     Keep in mind that such a binding disables using :kbd:`Shift`:kbd:`A`
@@ -107,14 +107,14 @@ Examples
     With the default configuration, this means :kbd:`A` will override :kbd:`Y` for "Archery Range",
     and pressing :kbd:`Shift`:kbd:`Y` will not trigger "Archery Range" zone paint until reassigned.
 
-``overlay trigger gui/visible-hotkeys.zone-overlay add Gather Fruit g``
+``overlay trigger gui/visible-hotkeys.zone add Gather Fruit g``
     Use :kbd:`G` key for "Archery Range" zone painting.
     If the key is already in use, it will be unbound automatically from the previous action.
     For example, by default, :kbd:`g` is used for the "Garbage Dump" zone.
     Thus, "Garbage Dump" loses its hotkey after being assigned :kbd:`g` to "Gather Fruit."
     You can leave it as is or assign a new hotkey to "Garbage Dump" in this example.
 
-``overlay trigger gui/visible-hotkeys.zone-overlay clear Pit/Pond``
+``overlay trigger gui/visible-hotkeys.zone clear Pit/Pond``
     Remove a hotkey for pit/pond zone creation.
     It may be useful if you want to use only specific zones,
     and keep the other bindings active for other actions when the zone window is active.
